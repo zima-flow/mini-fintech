@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package bank.common.v1;
+
+option go_package = "github.com/zima-flow/go-mentor/mini-fintech/contracts/gen/bank/common/v1;commonv1";
+
+message PaginationRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+
+message PaginationResponse {
+  string next_page_token = 1;
+}

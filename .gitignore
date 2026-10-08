@@ -1,0 +1,27 @@
+# Binaries
+/bin/
+*.exe
+*.out
+*.test
+
+# Go
+vendor/
+*.prof
+coverage.out
+coverage.html
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+deploy/keys/
+
+# Local infra data
+deploy/data/
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+# Generated (kept out only if regeneration is deterministic; revisit per stage)
+# contracts/gen/

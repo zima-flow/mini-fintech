@@ -1,0 +1,10 @@
+go 1.27
+
+use (
+	./contracts
+	./platform
+	./services/api-gateway
+	./services/auth
+	./services/customer
+	./services/example
+)

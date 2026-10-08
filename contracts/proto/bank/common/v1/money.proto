@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package bank.common.v1;
+
+option go_package = "github.com/zima-flow/go-mentor/mini-fintech/contracts/gen/bank/common/v1;commonv1";
+
+message Money {
+  int64 amount_minor = 1;
+  string currency = 2;
+}

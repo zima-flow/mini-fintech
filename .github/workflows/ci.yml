@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "stage-*"]
+  pull_request:
+
+# Least privilege: CI only reads the repository.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Single pinned Go version for every job (spec §4.5, rule 09).
+  GO_VERSION: "1.27"
+
+jobs:
+  # 1. Contracts + lint gate. Everything downstream needs this to pass.
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: |
+            go.work.sum
+            **/go.sum
+
+      - name: Install pinned codegen tools
+        run: make tools
+
+      - name: buf lint
+        run: cd contracts && "$(go env GOPATH)/bin/buf" lint
+
+      - name: Verify generated code is up to date
+        run: |
+          make generate
+          git diff --exit-code
+          test -z "$(git status --porcelain -- contracts/gen)"
+
+      - name: golangci-lint (all modules)
+        run: make lint
+
+  # 2. Fast unit tests — no Docker, no database.
+  unit:
+    name: unit
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: |
+            go.work.sum
+            **/go.sum
+
+      - name: Unit tests
+        run: make test
+
+  # 3. Integration tests — testcontainers-go starts Postgres itself; no Actions
+  #    service containers (rule 09).
+  integration:
+    name: integration
+    needs: unit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: |
+            go.work.sum
+            **/go.sum
+
+      - name: Integration tests (testcontainers)
+        run: make test-integration

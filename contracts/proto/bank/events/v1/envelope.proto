@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package bank.events.v1;
+
+import "bank/events/v1/auth_events.proto";
+import "bank/events/v1/customer_events.proto";
+import "google/protobuf/any.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/zima-flow/go-mentor/mini-fintech/contracts/gen/bank/events/v1;eventsv1";
+
+message EventEnvelope {
+  string event_id = 1;
+  string event_type = 2;
+  int32 event_version = 3;
+
+  google.protobuf.Timestamp occurred_at = 4;
+  oneof payload {
+    UserRegistered user_registered = 5;
+    ProfileCreated profile_created = 6;
+    ProfileFilled profile_filled = 7;
+
+    google.protobuf.Any raw = 15;
+  }
+}

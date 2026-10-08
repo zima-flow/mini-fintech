@@ -1,0 +1,105 @@
+# golangci-lint configuration — v2 schema (requires golangci-lint v2.x).
+#
+# One lint toolchain across the workspace: golangci-lint v2.14.0, v2 config.
+# The workspace is a multi-module Go workspace, so `make lint` runs this config
+# once per module (see the Makefile); every path below is repo-root-relative.
+version: "2"
+
+run:
+  modules-download-mode: readonly
+
+linters:
+  default: standard
+  enable:
+    - depguard
+    - gochecknoinits
+    - gochecknoglobals
+    - paralleltest
+    - protogetter
+    - spancheck
+  settings:
+    depguard:
+      rules:
+        # Rule 03 / AGENTS.md: dependencies point inward. A service's domain
+        # package must not import its adapters, the shared infrastructure, or
+        # the generated wire types; it talks to them only through ports it
+        # defines itself.
+        #
+        # depguard matches `pkg` by import-path *prefix*, not glob, so the
+        # whole `platform` module (and `contracts/gen`) are denied once here,
+        # and every service module appends its own adapters/infra prefixes as it
+        # is created (services/example is the first; added in stage 0.9).
+        domain-purity:
+          files:
+            - "**/internal/domain/**"
+          deny:
+            - pkg: github.com/zima-flow/go-mentor/mini-fintech/platform
+              desc: "domain must not import shared infrastructure (rule 03)"
+            - pkg: github.com/zima-flow/go-mentor/mini-fintech/contracts/gen
+              desc: "domain must not import generated wire types (rule 03)"
+            - pkg: github.com/zima-flow/go-mentor/mini-fintech/services/example/internal/adapters
+              desc: "domain must not import adapters (rule 03)"
+            - pkg: github.com/zima-flow/go-mentor/mini-fintech/services/example/internal/infra
+              desc: "domain must not import infrastructure (rule 03)"
+            - pkg: github.com/zima-flow/go-mentor/mini-fintech/services/auth/internal/adapters
+              desc: "domain must not import adapters (rule 03)"
+            - pkg: github.com/zima-flow/go-mentor/mini-fintech/services/auth/internal/infra
+              desc: "domain must not import infrastructure (rule 03)"
+            - pkg: github.com/zima-flow/go-mentor/mini-fintech/services/customer/internal/adapters
+              desc: "domain must not import adapters (rule 03)"
+            - pkg: github.com/zima-flow/go-mentor/mini-fintech/services/customer/internal/infra
+              desc: "domain must not import infrastructure (rule 03)"
+            - pkg: github.com/zima-flow/go-mentor/mini-fintech/services/api-gateway/internal/adapters
+              desc: "domain must not import adapters (rule 03)"
+            - pkg: github.com/zima-flow/go-mentor/mini-fintech/services/api-gateway/internal/infra
+              desc: "domain must not import infrastructure (rule 03)"
+        # The application layer defines the use cases and may depend on the
+        # domain and on injected platform ports, but never on adapters.
+        app-purity:
+          files:
+            - "**/internal/app/**"
+          deny:
+            - pkg: github.com/zima-flow/go-mentor/mini-fintech/services/example/internal/adapters
+              desc: "app must not import adapters (rule 03)"
+            - pkg: github.com/zima-flow/go-mentor/mini-fintech/services/example/internal/infra
+              desc: "app must not import infrastructure (rule 03)"
+            - pkg: github.com/zima-flow/go-mentor/mini-fintech/services/auth/internal/adapters
+              desc: "app must not import adapters (rule 03)"
+            - pkg: github.com/zima-flow/go-mentor/mini-fintech/services/auth/internal/infra
+              desc: "app must not import infrastructure (rule 03)"
+            - pkg: github.com/zima-flow/go-mentor/mini-fintech/services/customer/internal/adapters
+              desc: "app must not import adapters (rule 03)"
+            - pkg: github.com/zima-flow/go-mentor/mini-fintech/services/customer/internal/infra
+              desc: "app must not import infrastructure (rule 03)"
+            - pkg: github.com/zima-flow/go-mentor/mini-fintech/services/api-gateway/internal/adapters
+              desc: "app must not import adapters (rule 03)"
+            - pkg: github.com/zima-flow/go-mentor/mini-fintech/services/api-gateway/internal/infra
+              desc: "app must not import infrastructure (rule 03)"
+        # ADR-0002: pgx v5 native SQL only — no database/sql, sqlx or ORM.
+        persistence:
+          deny:
+            - pkg: database/sql
+              desc: use pgx v5 (ADR-0002)
+            - pkg: github.com/jmoiron/sqlx
+              desc: use pgx v5 (ADR-0002)
+            - pkg: gorm.io/gorm
+              desc: no ORM (ADR-0002)
+  exclusions:
+    # `lax` lets generated files through even for linters that would otherwise
+    # object; `contracts/gen` is additionally named so it can never be edited
+    # to satisfy a linter.
+    generated: lax
+    paths:
+      - contracts/gen
+    rules:
+      # Integration tests need a real Docker/Postgres and are gated by the
+      # `integration` build tag; they must not be required to call t.Parallel.
+      - path: (.+)_integration_test\.go
+        linters: [paralleltest]
+      - path: ^e2e/
+        linters: [paralleltest]
+
+formatters:
+  enable:
+    - gofmt
+    - goimports

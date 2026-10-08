@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package bank.example.v1;
+
+option go_package = "github.com/zima-flow/go-mentor/mini-fintech/contracts/gen/bank/example/v1;examplev1";
+
+service ExampleService {
+  rpc Echo(EchoRequest) returns (EchoResponse);
+  rpc ProtectedEcho(ProtectedEchoRequest) returns (ProtectedEchoResponse);
+}
+
+message EchoRequest { string message = 1; }
+message EchoResponse { string message = 1; }
+message ProtectedEchoRequest { string message = 1; }
+message ProtectedEchoResponse { string message = 1; }

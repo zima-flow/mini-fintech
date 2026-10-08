@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package bank.notification.v1;
+
+import "bank/common/v1/pagination.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/zima-flow/go-mentor/mini-fintech/contracts/gen/bank/notification/v1;notificationv1";
+
+service NotificationService {
+  rpc GetNotification(GetNotificationRequest) returns (GetNotificationResponse);
+  rpc ListNotifications(ListNotificationsRequest) returns (ListNotificationsResponse);
+}
+
+enum NotificationChannel {
+  NOTIFICATION_CHANNEL_UNSPECIFIED = 0;
+  NOTIFICATION_CHANNEL_EMAIL = 1;
+  NOTIFICATION_CHANNEL_SMS = 2;
+}
+
+enum NotificationStatus {
+  NOTIFICATION_STATUS_UNSPECIFIED = 0;
+  NOTIFICATION_STATUS_SENT = 1;
+  NOTIFICATION_STATUS_FAILED = 2;
+}
+
+message Notification {
+  string notification_id = 1;
+  string customer_id = 2;
+  string event_id = 3;
+  string event_type = 4;
+  NotificationChannel channel = 5;
+  NotificationStatus status = 6;
+  string subject = 7;
+  string body = 8;
+  google.protobuf.Timestamp created_at = 9;
+}
+
+message GetNotificationRequest {
+  string notification_id = 1;
+}
+
+message GetNotificationResponse {
+  Notification notification = 1;
+}
+
+message ListNotificationsRequest {
+  string customer_id = 1;
+  NotificationChannel channel = 2;
+  bank.common.v1.PaginationRequest pagination = 3;
+}
+
+message ListNotificationsResponse {
+  repeated Notification notifications = 1;
+  bank.common.v1.PaginationResponse pagination = 2;
+}

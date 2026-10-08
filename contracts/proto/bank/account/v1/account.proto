@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package bank.account.v1;
+
+import "bank/common/v1/money.proto";
+import "bank/common/v1/pagination.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/zima-flow/go-mentor/mini-fintech/contracts/gen/bank/account/v1;accountv1";
+
+service AccountService {
+  rpc OpenAccount(OpenAccountRequest) returns (OpenAccountResponse);
+  rpc GetAccount(GetAccountRequest) returns (GetAccountResponse);
+  rpc ListAccounts(ListAccountsRequest) returns (ListAccountsResponse);
+  rpc GetBalance(GetBalanceRequest) returns (GetBalanceResponse);
+  rpc SetStatus(SetStatusRequest) returns (SetStatusResponse);
+  rpc CloseAccount(CloseAccountRequest) returns (CloseAccountResponse);
+}
+
+enum AccountStatus {
+  ACCOUNT_STATUS_UNSPECIFIED = 0;
+  ACCOUNT_STATUS_ACTIVE = 1;
+  ACCOUNT_STATUS_BLOCKED = 2;
+  ACCOUNT_STATUS_CLOSED = 3;
+}
+
+message Account {
+  string account_id = 1;
+  string customer_id = 2;
+  string account_number = 3;
+  string currency = 4;
+  AccountStatus status = 5;
+  google.protobuf.Timestamp opened_at = 6;
+  google.protobuf.Timestamp closed_at = 7;
+}
+
+message OpenAccountRequest {
+  string customer_id = 1;
+  string currency = 2;
+  string idempotency_key = 3;
+}
+
+message OpenAccountResponse {
+  Account account = 1;
+}
+
+message GetAccountRequest {
+  string account_id = 1;
+}
+
+message GetAccountResponse {
+  Account account = 1;
+}
+
+message ListAccountsRequest {
+  string customer_id = 1;
+  AccountStatus status = 2;
+  bank.common.v1.PaginationRequest pagination = 3;
+}
+
+message ListAccountsResponse {
+  repeated Account accounts = 1;
+  bank.common.v1.PaginationResponse pagination = 2;
+}
+
+message GetBalanceRequest {
+  string account_id = 1;
+}
+
+message GetBalanceResponse {
+  string account_id = 1;
+  bank.common.v1.Money balance = 2;
+}
+
+message SetStatusRequest {
+  string account_id = 1;
+  AccountStatus status = 2;
+  string reason = 3;
+  string idempotency_key = 4;
+}
+
+message SetStatusResponse {
+  Account account = 1;
+}
+
+message CloseAccountRequest {
+  string account_id = 1;
+  string idempotency_key = 2;
+}
+
+message CloseAccountResponse {
+  Account account = 1;
+}

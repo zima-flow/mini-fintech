@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+package bank.ledger.v1;
+
+import "bank/common/v1/money.proto";
+import "bank/common/v1/pagination.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/zima-flow/go-mentor/mini-fintech/contracts/gen/bank/ledger/v1;ledgerv1";
+
+service LedgerService {
+  rpc Transfer(TransferRequest) returns (TransferResponse);
+  rpc Deposit(DepositRequest) returns (DepositResponse);
+  rpc GetBalance(GetBalanceRequest) returns (GetBalanceResponse);
+  rpc GetTransaction(GetTransactionRequest) returns (GetTransactionResponse);
+  rpc ListTransactions(ListTransactionsRequest) returns (ListTransactionsResponse);
+}
+
+enum TransactionType {
+  TRANSACTION_TYPE_UNSPECIFIED = 0;
+  TRANSACTION_TYPE_TRANSFER = 1;
+  TRANSACTION_TYPE_DEPOSIT = 2;
+}
+
+enum TransactionStatus {
+  TRANSACTION_STATUS_UNSPECIFIED = 0;
+  TRANSACTION_STATUS_PENDING = 1;
+  TRANSACTION_STATUS_COMPLETED = 2;
+  TRANSACTION_STATUS_DECLINED = 3;
+}
+
+enum EntryDirection {
+  ENTRY_DIRECTION_UNSPECIFIED = 0;
+  ENTRY_DIRECTION_DEBIT = 1;
+  ENTRY_DIRECTION_CREDIT = 2;
+}
+
+message Transaction {
+  string transaction_id = 1;
+  TransactionType type = 2;
+  TransactionStatus status = 3;
+  bank.common.v1.Money amount = 4;
+  string from_account_id = 5;
+  string to_account_id = 6;
+  string decline_reason = 7;
+  google.protobuf.Timestamp created_at = 8;
+}
+
+message TransferRequest {
+  string from_account_id = 1;
+  string to_account_id = 2;
+  bank.common.v1.Money amount = 3;
+  string idempotency_key = 4;
+}
+
+message TransferResponse {
+  Transaction transaction = 1;
+}
+
+message DepositRequest {
+  string to_account_id = 1;
+  bank.common.v1.Money amount = 2;
+  string idempotency_key = 3;
+}
+
+message DepositResponse {
+  Transaction transaction = 1;
+}
+
+message GetBalanceRequest {
+  string account_id = 1;
+}
+
+message GetBalanceResponse {
+  string account_id = 1;
+  bank.common.v1.Money balance = 2;
+}
+
+message GetTransactionRequest {
+  string transaction_id = 1;
+}
+
+message GetTransactionResponse {
+  Transaction transaction = 1;
+}
+
+message ListTransactionsRequest {
+  string account_id = 1;
+  TransactionStatus status = 2;
+  bank.common.v1.PaginationRequest pagination = 3;
+}
+
+message ListTransactionsResponse {
+  repeated Transaction transactions = 1;
+  bank.common.v1.PaginationResponse pagination = 2;
+}

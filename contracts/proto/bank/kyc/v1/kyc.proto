@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+package bank.kyc.v1;
+
+import "bank/common/v1/pagination.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/zima-flow/go-mentor/mini-fintech/contracts/gen/bank/kyc/v1;kycv1";
+
+service KycService {
+  rpc SubmitApplication(SubmitApplicationRequest) returns (SubmitApplicationResponse);
+  rpc GetApplication(GetApplicationRequest) returns (GetApplicationResponse);
+  rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse);
+  rpc StartReview(StartReviewRequest) returns (StartReviewResponse);
+  rpc Approve(ApproveRequest) returns (ApproveResponse);
+  rpc Reject(RejectRequest) returns (RejectResponse);
+  rpc RequestDocuments(RequestDocumentsRequest) returns (RequestDocumentsResponse);
+}
+
+enum ApplicationStatus {
+  APPLICATION_STATUS_UNSPECIFIED = 0;
+  APPLICATION_STATUS_DRAFT = 1;
+  APPLICATION_STATUS_SUBMITTED = 2;
+  APPLICATION_STATUS_AUTO_CHECKS = 3;
+  APPLICATION_STATUS_IN_REVIEW = 4;
+  APPLICATION_STATUS_APPROVED = 5;
+  APPLICATION_STATUS_REJECTED = 6;
+  APPLICATION_STATUS_AUTO_REJECTED = 7;
+  APPLICATION_STATUS_DOCS_REQUESTED = 8;
+}
+
+message Application {
+  string application_id = 1;
+  string customer_id = 2;
+  ApplicationStatus status = 3;
+  string assigned_officer_id = 4;
+  string rejection_reason = 5;
+  repeated string requested_document_types = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+message SubmitApplicationRequest {
+  string customer_id = 1;
+  string idempotency_key = 2;
+}
+
+message SubmitApplicationResponse {
+  Application application = 1;
+}
+
+message GetApplicationRequest {
+  string application_id = 1;
+}
+
+message GetApplicationResponse {
+  Application application = 1;
+}
+
+message ListApplicationsRequest {
+  ApplicationStatus status = 1;
+  string assigned_officer_id = 2;
+  bank.common.v1.PaginationRequest pagination = 3;
+}
+
+message ListApplicationsResponse {
+  repeated Application applications = 1;
+  bank.common.v1.PaginationResponse pagination = 2;
+}
+
+message StartReviewRequest {
+  string application_id = 1;
+  string idempotency_key = 2;
+}
+
+message StartReviewResponse {
+  Application application = 1;
+}
+
+message ApproveRequest {
+  string application_id = 1;
+  string comment = 2;
+  string idempotency_key = 3;
+}
+
+message ApproveResponse {
+  Application application = 1;
+}
+
+message RejectRequest {
+  string application_id = 1;
+  string reason = 2;
+  string idempotency_key = 3;
+}
+
+message RejectResponse {
+  Application application = 1;
+}
+
+message RequestDocumentsRequest {
+  string application_id = 1;
+  repeated string document_types = 2;
+  string comment = 3;
+  string idempotency_key = 4;
+}
+
+message RequestDocumentsResponse {
+  Application application = 1;
+}

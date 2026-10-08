@@ -1,0 +1,91 @@
+syntax = "proto3";
+
+package bank.auth.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/zima-flow/go-mentor/mini-fintech/contracts/gen/bank/auth/v1;authv1";
+
+service AuthService {
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc Refresh(RefreshRequest) returns (RefreshResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+  rpc CreateOfficer(CreateOfficerRequest) returns (CreateOfficerResponse);
+}
+
+enum Role {
+  ROLE_UNSPECIFIED = 0;
+  ROLE_CLIENT = 1;
+  ROLE_OFFICER = 2;
+  ROLE_ADMIN = 3;
+}
+
+message TokenPair {
+  string access_token = 1;
+  string refresh_token = 2;
+  google.protobuf.Timestamp access_token_expires_at = 3;
+}
+
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+  string idempotency_key = 3;
+}
+
+message RegisterResponse {
+  string user_id = 1;
+  string customer_id = 2;
+  Role role = 3;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  TokenPair tokens = 1;
+  Role role = 2;
+  string user_id = 3;
+  string customer_id = 4;
+}
+
+message RefreshRequest {
+  string refresh_token = 1;
+}
+
+message RefreshResponse {
+  TokenPair tokens = 1;
+}
+
+message LogoutRequest {
+  string refresh_token = 1;
+}
+
+message LogoutResponse {}
+
+message ValidateTokenRequest {
+  string access_token = 1;
+}
+
+message ValidateTokenResponse {
+  bool valid = 1;
+  string user_id = 2;
+  Role role = 3;
+  string customer_id = 4;
+  google.protobuf.Timestamp expires_at = 5;
+}
+
+message CreateOfficerRequest {
+  string email = 1;
+  string password = 2;
+  Role role = 3;
+  string idempotency_key = 4;
+}
+
+message CreateOfficerResponse {
+  string user_id = 1;
+  Role role = 2;
+}

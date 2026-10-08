@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package bank.customer.v1;
+
+import "bank/common/v1/pagination.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/zima-flow/go-mentor/mini-fintech/contracts/gen/bank/customer/v1;customerv1";
+
+service CustomerService {
+  rpc GetProfile(GetProfileRequest) returns (GetProfileResponse);
+  rpc UpdateProfile(UpdateProfileRequest) returns (UpdateProfileResponse);
+  rpc GetCustomer(GetCustomerRequest) returns (GetCustomerResponse);
+  rpc GetCustomerStatus(GetCustomerStatusRequest) returns (GetCustomerStatusResponse);
+  rpc ListCustomers(ListCustomersRequest) returns (ListCustomersResponse);
+}
+
+enum CustomerStatus {
+  CUSTOMER_STATUS_UNSPECIFIED = 0;
+  CUSTOMER_STATUS_NEW = 1;
+  CUSTOMER_STATUS_PROFILE_FILLED = 2;
+  CUSTOMER_STATUS_ON_KYC = 3;
+  CUSTOMER_STATUS_ACTIVE = 4;
+  CUSTOMER_STATUS_REJECTED = 5;
+  CUSTOMER_STATUS_BLOCKED = 6;
+}
+
+message Customer {
+  string customer_id = 1;
+  string user_id = 2;
+  string full_name = 3;
+  string date_of_birth = 4;
+  string address = 5;
+  string phone = 6;
+  string citizenship = 7;
+  CustomerStatus status = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+}
+
+message GetProfileRequest {}
+
+message GetProfileResponse {
+  Customer customer = 1;
+}
+
+message UpdateProfileRequest {
+  string full_name = 1;
+  string date_of_birth = 2;
+  string address = 3;
+  string phone = 4;
+  string citizenship = 5;
+  string idempotency_key = 6;
+}
+
+message UpdateProfileResponse {
+  Customer customer = 1;
+}
+
+message GetCustomerRequest {
+  string customer_id = 1;
+}
+
+message GetCustomerResponse {
+  Customer customer = 1;
+}
+
+message GetCustomerStatusRequest {
+  string customer_id = 1;
+}
+
+message GetCustomerStatusResponse {
+  string customer_id = 1;
+  CustomerStatus status = 2;
+}
+
+message ListCustomersRequest {
+  CustomerStatus status = 1;
+  bank.common.v1.PaginationRequest pagination = 2;
+}
+
+message ListCustomersResponse {
+  repeated Customer customers = 1;
+  bank.common.v1.PaginationResponse pagination = 2;
+}

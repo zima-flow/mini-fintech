@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package bank.events.v1;
+
+option go_package = "github.com/zima-flow/go-mentor/mini-fintech/contracts/gen/bank/events/v1;eventsv1";
+
+message ProfileCreated {
+  string user_id = 1;
+  string customer_id = 2;
+}
+
+message ProfileFilled {
+  string customer_id = 1;
+  string user_id = 2;
+}
